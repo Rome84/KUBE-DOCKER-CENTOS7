@@ -1,1 +1,1 @@
-{"rsync":{"/vagrant":{"type":"rsync","guestpath":"/vagrant","hostpath":"C:/LINUX-OS/SPLUNK-CENTOS-7","disabled":false,"__vagrantfile":true,"owner":"vagrant","group":"vagrant"}}}
+{"rsync":{"/vagrant":{"type":"rsync","guestpath":"/vagrant","hostpath":"C:/LINUX-OS/KUBE-DOCKER-CENTOS-7","disabled":false,"__vagrantfile":true,"owner":"vagrant","group":"vagrant"}}}
