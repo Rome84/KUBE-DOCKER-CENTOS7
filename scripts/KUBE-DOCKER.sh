@@ -42,7 +42,7 @@ sudo yum install -y --setopt=obsoletes=0  docker-ce-17.03.1.ce-1.el7.centos dock
 echo "-----------------Adding docker user to the docker group to execute docker commands without sudo----------------------"
 sudo usermod -aG docker docker
 
-echo "---------------Starting the Docker service, checking the status and adding docker service to boot----------------"
+echo "---------------Activating Docker Services----------------"
 sudo systemctl start docker
 sudo systemctl enable docker 
 sudo systemctl status docker
