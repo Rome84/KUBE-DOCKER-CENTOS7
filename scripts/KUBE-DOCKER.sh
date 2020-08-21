@@ -57,6 +57,13 @@ sudo systemctl status docker
 echo "-----------Checking docker version-----------------"
 sudo docker version
 
+echo "----------------------Disable SELinux---------------------"
+setenforce 0
+sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+
+echo "--------------Disable Swap-----------------------"
+swapoff -a
+
 echo "-----------Install kubectl binary via curl----------------"
 curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
 
@@ -78,27 +85,21 @@ gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
         https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
 
-echo "----------------Disabling SELinux (sadly enough, until support is added)-----------------"
-sudo setenforce 0
-
 echo "--------------------installing kubelet, kubeadm and kubectl--------------"
-sudo yum install -y kubelet kubeadm
+sudo yum install -y kubelet kubeadm kubectl
 
-echo "-------------starting and Checking the status and Enabling kubelet------------------"
+echo "-------------Add Kubernetes to the cgroupfs group------------------------"
+sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+echo "-------------Reloading the deamon, Checking the status and Enabling kubelet------------------"
+systemctl daemon-reload
 sudo systemctl start kubelet && systemctl enable kubelet
 sudo systemctl status kubelet
 
-echo "--------------------Configure Kubernetes Master---------------------------"
-kubeadm init --pod-network-cidr=10.244.0.0/16
+echo "-------------------Initializing Kubernetes-----------------------------------"
+kubeadm init --apiserver-advertise-address=192.168.16.179 --pod-network-cidr=192.168.1.0/16
 
-echo "-------------Start the cluster as a normal user-------------"
-sudo cp /etc/kubernetes/admin.conf $HOME/
-sudo chown $(id -u):$(id -g) $HOME/admin.conf
-export KUBECONFIG=$HOME/admin.conf
-
-echo "----------Enabling bash completion for both-------------------"
-kubeadm completion bash > /etc/bash_completion.d/kubeadm
-kubectl completion bash > /etc/bash_completion.d/kubectl
+echo "-------------Set up the Kubernetes Config----------------------------"
 
 echo "---------------Installing the pod network before the cluster can come up---------------"
 kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
