@@ -104,10 +104,6 @@ echo "-------------Set up the Kubernetes Config----------------------------"
 echo "---------------Installing the pod network before the cluster can come up---------------"
 kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
 
-echo "-----------Appending  the FQDN to the /etc/hosts----------------"
-echo "192.168.33.28 capacitybay28.example.com capacity28" >>/etc/hosts
-echo "capacitybay01.example.com" >/etc/hostname
-
 echo "------------Activating firewalld services------------"
 sudo systemctl start firewalld
 sudo systemctl status firewalld
@@ -129,5 +125,9 @@ firewall-cmd --permanent --add-port=10252/tcp
 firewall-cmd --permanent --add-port=179/tcp
 firewall-cmd --permanent --add-port=4789/udp
 
-echo "Rebooting the server"
+echo "-----------Appending  the FQDN to the /etc/hosts----------------"
+echo "192.168.33.28 capacitybay28.example.com capacity28" >>/etc/hosts
+echo "capacitybay01.example.com" >/etc/hostname
+
+echo "--------------------Rebooting the server-------------------------"
 init 6
