@@ -129,5 +129,5 @@ echo "-----------Appending  the FQDN to the /etc/hosts----------------"
 echo "192.168.33.28 capacitybay28.example.com capacity28" >>/etc/hosts
 echo "capacitybay01.example.com" >/etc/hostname
 
-echo "--------------------Rebooting the server-------------------------"
+echo "--------------------Rebooting The Server-------------------------"
 init 6
