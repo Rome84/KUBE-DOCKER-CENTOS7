@@ -9,62 +9,61 @@
 #    |___/ \___/ \___|_|\_\___|_|         \_| \_/\__,_|_.__/ \___|_|  |_| |_|\___|\__\___||___/ #
 #################################################################################################                                                                                           
                                                                                           
-echo "Install linux development tools"
+echo "Installing linux development tools"
 yum -y groupinstall "Development Tools"
 
 echo "Updating your OS to latest OS..."
 yum update -y
 
-echo "Install the dependencies"
+echo "Installing the dependencies"
 yum install epel-release wget git curl tree htop vim net-tools nc  -y
 
-echo "Creating docker group"
+echo "Creating Docker group"
 groupadd docker
 
 echo "Creating docker user"
 useradd -d /opt/docker -m -g docker docker
 
-echo "Adding docker to the wheel group"
+echo "Adding Docker to the wheel group"
 usermod -aG wheel docker
 
-echo "Giving Splunk Ownership"
+echo "Giving Docker Ownership"
 chown -R docker:docker /opt/docker/
 
-echo "Download the docker package from docker.com..."
+echo "Downloading the docker package from docker.com..."
 wget https://download.docker.com/linux/centos/docker-ce.repo -O /etc/yum.repos.d/docker-ce.repo
 
 echo "Go to docker binary path"
 cd /opt/docker/bin
 
-echo "Install the docker package"
-sudo yum install -y --setopt=obsoletes=0  docker-ce-17.03.1.ce-1.el7.centos docker-ce-selinux 17.03.1.ce-1.el7.centos
+echo "Installing the docker package"
+yum install -y --setopt=obsoletes=0  docker-ce-17.03.1.ce-1.el7.centos docker-ce-selinux 17.03.1.ce-1.el7.centos
 
-echo "Add your Linux user to docker group to execute docker commands without sudo"
-sudo usermod -aG docker docker
+echo "Adding your Linux user to docker group to execute docker commands without sudo"
+usermod -aG docker docker
 
-echo "Start the Docker service, check the status and add docker service to boot"
-sudo systemctl start docker
-sudo systemctl enable docker 
-sudo systemctl status docker
+echo "Starting the Docker service, checking the status and adding docker service to boot"
+systemctl start docker
+systemctl enable docker 
+systemctl status docker
 
-echo "Updating your OS to latest OS..."
-sudo yum update -y
+echo "Updating your OS to latest releases..."
+yum update -y
 
 echo "Installing docker-engine package..."
-sudo yum install -y install docker-engine
+yum install -y install docker-engine
 
 echo "start and check the status Docker service.."
-sudo systemctl start docker
-sudo systemctl status docker
+systemctl start docker
+systemctl status docker
 
-# Check docker version
-sudo docker -version
+echo "Checking docker version"
+docker -version
 
-# disable SELinux (sadly enough, until support is added)
+echo "disabling SELinux (sadly enough, until support is added)"
 sudo setenforce 0
 
-# install kubeadm
-## add repo
+echo "adding repo
 sudo cat << EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -77,35 +76,36 @@ exclude=kube*
 
 EOF
 
-## installing kubelet, kubeadm and kubectl
-sudo yum install -y --disableexcludes=kubernetes kubelet kubeadm kubectl
+echo "installing kubelet, kubeadm and kubectl"
+yum install -y --disableexcludes=kubernetes kubelet kubeadm kubectl
 
-## enabling and start kubelet
-sudo systemctl enable kubelet
-sudo systemctl start kubelet
+echo "Enabling and starting kubelet"
+systemctl enable kubelet
+systemctl start kubelet
 
-## enabling bash completion for both
-sudo kubeadm completion bash > /etc/bash_completion.d/kubeadm
-sudo kubectl completion bash > /etc/bash_completion.d/kubectl
+echo "Enabling bash completion for both"
+kubeadm completion bash > /etc/bash_completion.d/kubeadm
+kubectl completion bash > /etc/bash_completion.d/kubectl
 
-## activate the completion
+echo "Activate the completion
 . /etc/profile
 
-# copying the credentials to your user
+echo "Copying the credentials to your user"
 mkdir -p $HOME/.kube
 cat /etc/kubernetes/admin.conf > $HOME/.kube/config
 chmod 600 $HOME/.kube/config
 
-# installing networking
+echo "Installing networking"
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.10.0/Documentation/kube-flannel.yml
 
-# letting master node be used as regular node (put pods there) (optional)
+echo "Letting master node be used as regular node (put pods there) (optional)"
 kubectl taint nodes --all node-role.kubernetes.io/master-
 
-# Appending  the FQDN to the /etc/hosts
+echo "Appending  the FQDN to the /etc/hosts"
 echo "192.168.33.28 capacitybay28.example.com capacity28" >>/etc/hosts
 echo "capacitybay01.example.com" >/etc/hostname
 
+echo "Grabbing passage for splunk through the firewall"
 firewall-cmd --permanent --add-port=10250/tcp
 firewall-cmd --permanent --add-port=30000-32767/tcp                                                   
 firewall-cmd --permanent --add-port=179/tcp
@@ -121,5 +121,5 @@ firewall-cmd --permanent --add-port=10252/tcp
 firewall-cmd --permanent --add-port=179/tcp
 firewall-cmd --permanent --add-port=4789/udp
 
-# Reboot the server
-sudo init 6
+echo "Rebooting the server"
+init 6
