@@ -39,16 +39,13 @@ cd /opt/docker/bin
 echo "---------------------------Installing the docker package--------------------------------------------------"
 sudo yum install -y --setopt=obsoletes=0  docker-ce-17.03.1.ce-1.el7.centos docker-ce-selinux 17.03.1.ce-1.el7.centos
 
-echo "-----------------Adding your Linux user to docker group to execute docker commands without sudo----------------------"
+echo "-----------------Adding docker user to the docker group to execute docker commands without sudo----------------------"
 sudo usermod -aG docker docker
 
 echo "---------------Starting the Docker service, checking the status and adding docker service to boot----------------"
 sudo systemctl start docker
 sudo systemctl enable docker 
 sudo systemctl status docker
-
-echo "-----------------Updating the OS to latest releases-------------------------"
-sudo yum update -y
 
 echo "----------------------------Installing docker-engine package-----------------------"
 sudo yum install -y install docker-engine
