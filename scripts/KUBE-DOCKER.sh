@@ -67,7 +67,7 @@ swapoff -a
 echo "-----------Install kubectl binary via curl----------------"
 curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
 
-echo ----------------Make the kubectl binary executable---------------"
+echo "----------------Make the kubectl binary executable---------------"
 sudo chmod +x ./kubectl
 
 echo "-----------------Move the binary in to your PATH-------------------"
