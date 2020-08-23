@@ -14,7 +14,7 @@ sudo yum -y groupinstall "Development Tools"
 
 echo "---------------Updating the OS to latest release packages--------------------"
 sudo yum update -y
-
+echo "################################################################################################"
 echo "-------------------Installing the dependencies------------------------"
 sudo yum install epel-release wget git curl tree htop vim net-tools nc  -y
 
@@ -26,7 +26,7 @@ sudo useradd -d /opt/docker -m -g docker docker
 
 echo "----------------------Adding Docker to the wheel group----------------------"
 sudo usermod -aG wheel docker
-
+echo "################################################################################################"
 echo "------------------Giving Docker Ownership----------------------------"
 sudo chown -R docker:docker /opt/docker/
 
@@ -36,6 +36,7 @@ wget https://download.docker.com/linux/centos/docker-ce.repo -O /etc/yum.repos.d
 echo "---------------------------Go to docker binary path--------------------------------"
 cd /opt/docker/bin
 
+echo "################################################################################################"
 echo "---------------------------Installing the docker package--------------------------------------------------"
 sudo yum install -y --setopt=obsoletes=0  docker-ce-17.03.1.ce-1.el7.centos docker-ce-selinux 17.03.1.ce-1.el7.centos
 
@@ -47,6 +48,7 @@ sudo systemctl start docker
 sudo systemctl enable docker 
 sudo systemctl status docker
 
+echo "################################################################################################"
 echo "----------------------------Installing docker-engine package-----------------------"
 sudo yum install -y install docker-engine
 
@@ -57,6 +59,7 @@ sudo systemctl status docker
 echo "-----------Checking docker version-----------------"
 sudo docker version
 
+echo "################################################################################################"
 echo "----------------------Disable SELinux---------------------"
 setenforce 0
 sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
@@ -69,6 +72,7 @@ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s htt
 
 echo "----------------Make the kubectl binary executable---------------"
 sudo chmod +x ./kubectl
+echo "################################################################################################"
 
 echo "-----------------Move the binary in to your PATH-------------------"
 sudo mv ./kubectl /usr/local/bin/kubectl
@@ -85,6 +89,7 @@ gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
         https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
 
+echo "################################################################################################"
 echo "--------------------installing kubelet, kubeadm and kubectl--------------"
 sudo yum install -y kubelet kubeadm kubectl
 
@@ -96,6 +101,7 @@ systemctl daemon-reload
 sudo systemctl start kubelet && systemctl enable kubelet
 sudo systemctl status kubelet
 
+echo "################################################################################################"
 echo "-------------------Initializing Kubernetes-----------------------------------"
 kubeadm init --apiserver-advertise-address=192.168.16.179 --pod-network-cidr=192.168.1.0/16
 
@@ -104,6 +110,7 @@ echo "-------------Set up the Kubernetes Config----------------------------"
 echo "---------------Installing the pod network before the cluster can come up---------------"
 kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
 
+echo "################################################################################################"
 echo "--------Download Python 3.6----------"
 cd /usr/src
 wget https://www.python.org/ftp/python/3.6.10/Python-3.6.10.tgz
@@ -123,20 +130,23 @@ rm /usr/src/Python-3.6.10.tgz
 echo "----------Checking the Python Version-----"
 python3.6 -V
 
+echo "################################################################################################"
 echo "------Installing pip packages for AWSCLI-----"
-yum install python3-pip
+sudo yum install python3-pip -y
+echo "---------------Install the AWS CLI version 2 on Linux---------"
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
 
+echo "################################################################################################"
 echo "-------Installing the AWS CLI tools as a regular user execute----"
 pip3 install awscli --upgrade --user
-
-echo "----------Checking the AWS CLI command version-------"
-aws --version
 
 echo "------------Activating firewalld services------------"
 sudo systemctl start firewalld
 sudo systemctl status firewalld
 sudo systemctl enable firewalld
-
+echo "################################################################################################"
 echo "-------------Grabbing passage for splunk through the firewall-------------------"
 firewall-cmd --permanent --add-port=10250/tcp
 firewall-cmd --permanent --add-port=30000-32767/tcp                                                   
@@ -152,10 +162,10 @@ firewall-cmd --permanent --add-port=10251/tcp
 firewall-cmd --permanent --add-port=10252/tcp
 firewall-cmd --permanent --add-port=179/tcp
 firewall-cmd --permanent --add-port=4789/udp
-
+echo "################################################################################################"
 echo "-----------Appending  the FQDN to the /etc/hosts----------------"
 echo "192.168.33.28 capacitybay28.example.com capacity28" >>/etc/hosts
 echo "capacitybay01.example.com" >/etc/hostname
-
+echo "################################################################################################"
 echo "--------------------Rebooting The Server-------------------------"
 init 6
