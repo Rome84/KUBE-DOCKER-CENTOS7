@@ -42,6 +42,20 @@ sudo yum install -y --setopt=obsoletes=0  docker-ce-17.03.1.ce-1.el7.centos dock
 echo "################################################################################################"
 echo "-------Adding docker user to the docker group to execute docker commands without sudo----------"
 sudo usermod -aG docker docker
+
+echo "################################################################################################"
+echo "-----------Set up the Docker daemon------------------------"
+cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2"
+}
+EOF
+mkdir -p /etc/systemd/system/docker.service.d
 echo "################################################################################################"
 echo "---------------Activating Docker Services----------------"
 sudo systemctl start docker
@@ -118,27 +132,6 @@ echo "---------Confirming the AWSCLI installation-----------------------------"
 echo "################################################################################################"
 echo "-------Installing all AWS CLI tools pypy botocore PyYAML s3transfer etc----"
 pip3 install awscli --upgrade --user
-echo "################################################################################################"
-echo "------------Activating firewalld services---------------------"
-sudo systemctl start firewalld
-sudo systemctl status firewalld
-sudo systemctl enable firewalld
-echo "################################################################################################"
-echo "-------------Grabbing passage for KUBERNETES & DOCKER through the firewall-------------------"
-firewall-cmd --permanent --add-port=10250/tcp
-firewall-cmd --permanent --add-port=30000-32767/tcp                                                   
-firewall-cmd --permanent --add-port=179/tcp
-firewall-cmd --permanent --add-port=4789/udp
-firewall-cmd --permanent --add-port=80/tcp
-firewall-cmd --permanent --add-port=8080/tcp
-firewall-cmd --permanent --add-port=8000/tcp
-firewall-cmd --permanent --add-port=6443/tcp
-firewall-cmd --permanent --add-port=2379-2380/tcp
-firewall-cmd --permanent --add-port=10250/tcp
-firewall-cmd --permanent --add-port=10251/tcp
-firewall-cmd --permanent --add-port=10252/tcp
-firewall-cmd --permanent --add-port=179/tcp
-firewall-cmd --permanent --add-port=4789/udp
 echo "################################################################################################"
 echo "-----------Appending  the FQDN to the /etc/hosts----------------"
 echo "192.168.33.28 capacitybay28.example.com capacity28" >>/etc/hosts
