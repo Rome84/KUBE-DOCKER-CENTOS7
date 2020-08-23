@@ -104,6 +104,73 @@ echo "-------------Set up the Kubernetes Config----------------------------"
 echo "---------------Installing the pod network before the cluster can come up---------------"
 kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
 
+echo "--------Download Python 3.7----------"
+cd /usr/src
+wget https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz
+
+echo "----------Extracting the downloaded package-----------"
+tar xzf Python-3.7.9.tgz
+
+echo "---------Installing Python 3.7------------"
+cd Python-3.7.9
+./configure --enable-optimizations
+echo "--------Preventing to replace the default python binary file /usr/bin/python---"
+make altinstall
+
+echo "------Removing downloaded source archive file from your system----"
+rm /usr/src/Python-3.7.9.tgz
+
+echo "----------Checking the Python Version-----"
+python3.7 -V
+
+echo "--------Download Python 3.6----------"
+cd /usr/src
+wget https://www.python.org/ftp/python/3.6.10/Python-3.6.10.tgz
+
+echo "----------Extracting the downloaded package-----------"
+tar xzf Python-3.6.10.tgz
+
+echo "---------Installing Python 3.7------------"
+cd Python-3.6.10
+./configure --enable-optimizations
+echo "--------Preventing to replace the default python binary file /usr/bin/python---"
+make altinstall
+
+echo "------Removing downloaded source archive file from your system----"
+rm /usr/src/Python-3.6.10.tgz
+
+echo "----------Checking the Python Version-----"
+python3.6 -V
+
+
+echo "--------Download Python 2.7----------"
+cd /usr/src
+wget https://www.python.org/ftp/python/2.7.17/Python-2.7.17.tgz
+
+echo "----------Extracting the downloaded package-----------"
+tar xzf Python-2.7.17.tgz
+
+echo "---------Installing Python 2.7------------"
+cd Python-2.7.17
+./configure --enable-optimizations
+echo "--------Preventing to replace the default python binary file /usr/bin/python---"
+make altinstall
+
+echo "------Removing downloaded source archive file from your system----"
+rm /usr/src/Python-2.7.17.tgz
+
+echo "----------Checking the Python Version-----"
+python2.7 -V
+
+echo "------Installing pip packages for AWSCLI-----"
+yum install python3-pip
+
+echo "-------Installing the AWS CLI tools as a regular user execute----"
+pip3 install awscli --upgrade --user
+
+echo "----------Checking the AWS CLI command version-------"
+aws --version
+
 echo "------------Activating firewalld services------------"
 sudo systemctl start firewalld
 sudo systemctl status firewalld
