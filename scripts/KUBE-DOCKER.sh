@@ -116,7 +116,7 @@ echo "##########################################################################
 echo "---------Confirming the AWSCLI installation-----------------------------"
 aws --version
 echo "################################################################################################"
-echo "-------Installing the AWS CLI tools as a regular user execute----"
+echo "-------Installing all AWS CLI tools pypy botocore PyYAML s3transfer etc----"
 pip3 install awscli --upgrade --user
 echo "################################################################################################"
 echo "------------Activating firewalld services---------------------"
