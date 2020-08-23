@@ -114,7 +114,7 @@ unzip awscliv2.zip
 sudo ./aws/install
 echo "################################################################################################"
 echo "---------Confirming the AWSCLI installation-----------------------------"
-aws --version
+/usr/local/bin/aws --version
 echo "################################################################################################"
 echo "-------Installing all AWS CLI tools pypy botocore PyYAML s3transfer etc----"
 pip3 install awscli --upgrade --user
