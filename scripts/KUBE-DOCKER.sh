@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-#### Install the latest KUBERNETES & DOCKER COMMUNITY EDITION using script ####
+echo "################################################################################################"
+echo "-----Installing the latest KUBERNETES & DOCKER COMMUNITY EDITION using the CODE-------"
 #################################################################################################
 #     _____           _                    _   __      _                          _             #
 #    |  _  \         | |                  | | / /     | |                        | |            #
@@ -8,41 +9,40 @@
 #    | |/ / (_) | (__|   <  __/ |         | |\  \ |_| | |_) |  __/ |  | | | |  __/ ||  __/\__ \ #
 #    |___/ \___/ \___|_|\_\___|_|         \_| \_/\__,_|_.__/ \___|_|  |_| |_|\___|\__\___||___/ #
 #################################################################################################                                                                                           
-                                                                                          
+echo "################################################################################################"                                                                                    
 echo "------------------Installing linux development tools------------------------"
 sudo yum -y groupinstall "Development Tools"
-
+echo "################################################################################################"
 echo "---------------Updating the OS to latest release packages--------------------"
 sudo yum update -y
 echo "################################################################################################"
 echo "-------------------Installing the dependencies------------------------"
 sudo yum install epel-release wget git curl tree htop vim net-tools nc  -y
-
+echo "################################################################################################"
 echo "----------------------Creating Docker group--------------------"
 sudo groupadd docker
-
+echo "################################################################################################"
 echo "-----------------Creating docker user---------------------"
 sudo useradd -d /opt/docker -m -g docker docker
-
+echo "################################################################################################"
 echo "----------------------Adding Docker to the wheel group----------------------"
 sudo usermod -aG wheel docker
 echo "################################################################################################"
 echo "------------------Giving Docker Ownership----------------------------"
 sudo chown -R docker:docker /opt/docker/
-
+echo "################################################################################################"
 echo "-------------------Downloading the docker package from docker.com---------------------"
 wget https://download.docker.com/linux/centos/docker-ce.repo -O /etc/yum.repos.d/docker-ce.repo
-
+echo "################################################################################################"
 echo "---------------------------Go to docker binary path--------------------------------"
 cd /opt/docker/bin
-
 echo "################################################################################################"
-echo "---------------------------Installing the docker package--------------------------------------------------"
+echo "---------------------------Installing the docker package-------------------------------------"
 sudo yum install -y --setopt=obsoletes=0  docker-ce-17.03.1.ce-1.el7.centos docker-ce-selinux 17.03.1.ce-1.el7.centos
-
-echo "-----------------Adding docker user to the docker group to execute docker commands without sudo----------------------"
+echo "################################################################################################"
+echo "-------Adding docker user to the docker group to execute docker commands without sudo----------"
 sudo usermod -aG docker docker
-
+echo "################################################################################################"
 echo "---------------Activating Docker Services----------------"
 sudo systemctl start docker
 sudo systemctl enable docker 
@@ -51,11 +51,11 @@ sudo systemctl status docker
 echo "################################################################################################"
 echo "----------------------------Installing docker-engine package-----------------------"
 sudo yum install -y install docker-engine
-
+echo "################################################################################################"
 echo "-------------------start and check the status Docker service----------------------"
 sudo systemctl start docker
 sudo systemctl status docker
-
+echo "################################################################################################"
 echo "-----------Checking docker version-----------------"
 sudo docker version
 
@@ -63,20 +63,20 @@ echo "##########################################################################
 echo "----------------------Disable SELinux---------------------"
 setenforce 0
 sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
-
+echo "################################################################################################"
 echo "--------------Disable Swap-----------------------"
 swapoff -a
-
+echo "################################################################################################"
 echo "-----------Install kubectl binary via curl----------------"
 curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-
+echo "################################################################################################"
 echo "----------------Make the kubectl binary executable---------------"
 sudo chmod +x ./kubectl
 echo "################################################################################################"
 
 echo "-----------------Move the binary in to your PATH-------------------"
 sudo mv ./kubectl /usr/local/bin/kubectl
-
+echo "################################################################################################"
 echo "-----------------adding repo-------------------------"
 sudo cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
@@ -95,7 +95,7 @@ sudo yum install -y kubelet kubeadm kubectl
 
 echo "-------------Add Kubernetes to the cgroupfs group------------------------"
 sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-
+echo "################################################################################################"
 echo "-------------Reloading the deamon, Checking the status and Enabling kubelet------------------"
 systemctl daemon-reload
 sudo systemctl start kubelet && systemctl enable kubelet
@@ -104,9 +104,9 @@ sudo systemctl status kubelet
 echo "################################################################################################"
 echo "-------------------Initializing Kubernetes-----------------------------------"
 kubeadm init --apiserver-advertise-address=192.168.16.179 --pod-network-cidr=192.168.1.0/16
-
+echo "################################################################################################"
 echo "-------------Set up the Kubernetes Config----------------------------"
-
+echo "################################################################################################"
 echo "---------------Installing the pod network before the cluster can come up---------------"
 kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
 
@@ -114,25 +114,27 @@ echo "##########################################################################
 echo "--------Download Python 3.6----------"
 cd /usr/src
 wget https://www.python.org/ftp/python/3.6.10/Python-3.6.10.tgz
-
+echo "################################################################################################"
 echo "----------Extracting the downloaded package-----------"
 tar xzf Python-3.6.10.tgz
-
+echo "################################################################################################"
 echo "---------Installing Python 3.7------------"
 cd Python-3.6.10
 ./configure --enable-optimizations
+echo "################################################################################################"
 echo "--------Preventing to replace the default python binary file /usr/bin/python---"
 make altinstall
-
+echo "################################################################################################"
 echo "------Removing downloaded source archive file from your system----"
 rm /usr/src/Python-3.6.10.tgz
-
+echo "################################################################################################"
 echo "----------Checking the Python Version-----"
 python3.6 -V
 
 echo "################################################################################################"
 echo "------Installing pip packages for AWSCLI-----"
 sudo yum install python3-pip -y
+echo "################################################################################################"
 echo "---------------Install the AWS CLI version 2 on Linux---------"
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
@@ -141,7 +143,7 @@ sudo ./aws/install
 echo "################################################################################################"
 echo "-------Installing the AWS CLI tools as a regular user execute----"
 pip3 install awscli --upgrade --user
-
+echo "################################################################################################"
 echo "------------Activating firewalld services------------"
 sudo systemctl start firewalld
 sudo systemctl status firewalld
