@@ -38,13 +38,57 @@ echo "---------------------------Go to docker binary path-----------------------
 cd /opt/docker/bin
 echo "################################################################################################"
 echo "--------------------Installing the docker package-------------------------------------"
-sudo yum install -y --setopt=obsoletes=0  docker-ce-17.03.1.ce-1.el7.centos docker-ce-selinux 17.03.1.ce-1.el7.centos
-echo "################################################################################################"
-echo "-------Adding docker user to the docker group to execute docker commands without sudo----------"
-sudo usermod -aG docker docker
+cat <<EOF > /etc/yum.repos.d/centos.repo
+[centos]
+name=CentOS-7
+baseurl=http://ftp.heanet.ie/pub/centos/7/os/x86_64/
+enabled=1
+gpgcheck=1
+gpgkey=http://ftp.heanet.ie/pub/centos/7/os/x86_64/RPM-GPG-KEY-CentOS-7
+[extras]
+name=CentOS-$releasever - Extras
+baseurl=http://ftp.heanet.ie/pub/centos/7/extras/x86_64/
+enabled=1
+gpgcheck=0
+EOF
 
-echo "################################################################################################"
-echo "-----------Set up the Docker daemon------------------------"
+
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+EOF
+
+# Set SELinux in permissive mode (effectively disabling it)
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+sudo systemctl enable --now kubelet
+# Restarting the kubelet is required:
+systemctl daemon-reload
+systemctl restart kubelet
+
+# (Install Docker CE)
+### Install required packages
+yum install -y yum-utils device-mapper-persistent-data lvm2
+## Add the Docker repository
+yum-config-manager --add-repo \
+  https://download.docker.com/linux/centos/docker-ce.repo
+# Install Docker CE
+yum update -y && yum install -y \
+  containerd.io-1.2.13 \
+  docker-ce-19.03.11 \
+  docker-ce-cli-19.03.11
+## Create /etc/docker
+mkdir /etc/docker
+# Set up the Docker daemon
 cat > /etc/docker/daemon.json <<EOF
 {
   "exec-opts": ["native.cgroupdriver=systemd"],
@@ -52,90 +96,33 @@ cat > /etc/docker/daemon.json <<EOF
   "log-opts": {
     "max-size": "100m"
   },
-  "storage-driver": "overlay2"
+  "storage-driver": "overlay2",
+  "storage-opts": [
+    "overlay2.override_kernel_check=true"
+  ]
 }
 EOF
 mkdir -p /etc/systemd/system/docker.service.d
-echo "################################################################################################"
-echo "---------------Activating Docker Services----------------"
-sudo systemctl start docker
-sudo systemctl enable docker 
-sudo systemctl status docker
-echo "################################################################################################"
-echo "----------------------------Installing docker-engine package-----------------------"
-sudo yum install -y install docker-engine
-echo "################################################################################################"
-echo "-------------------start and check the status Docker service----------------------"
-sudo systemctl start docker
-sudo systemctl status docker
-echo "################################################################################################"
-echo "-----------Checking docker version-----------------"
-sudo docker version
-
-echo "################################################################################################"
-echo "----------------------Disable SELinux---------------------"
-setenforce 0
-sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
-echo "################################################################################################"
-echo "--------------Disable Swap-----------------------"
-swapoff -a
-echo "################################################################################################"
-echo "-----------Install kubectl binary via curl----------------"
-curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-echo "################################################################################################"
-echo "----------------Make the kubectl binary executable---------------"
-sudo chmod +x ./kubectl
-echo "################################################################################################"
-echo "-----------------Move the binary in to your PATH-------------------"
-sudo mv ./kubectl /usr/local/bin/kubectl
-echo "################################################################################################"
-echo "-----------------adding repo-------------------------"
-sudo cat <<EOF > /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
-        https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-EOF
-echo "################################################################################################"
-echo "--------------------installing kubelet, kubeadm and kubectl--------------"
-sudo yum install -y kubelet kubeadm kubectl
-echo "-------------Add Kubernetes to the cgroupfs group------------------------"
-sed -i 's/cgroup-driver=systemd/cgroup-driver=cgroupfs/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-echo "################################################################################################"
-echo "-------------Reloading the deamon, Checking the status and Enabling kubelet------------------"
+# Restart Docker
 systemctl daemon-reload
-sudo systemctl start kubelet && systemctl enable kubelet
-sudo systemctl status kubelet
-echo "################################################################################################"
-echo "-------------------Initializing Kubernetes-----------------------------------"
-kubeadm init --apiserver-advertise-address=192.168.16.179 --pod-network-cidr=192.168.1.0/16
-echo "################################################################################################"
-echo "-------------Set up the Kubernetes Config----------------------------"
-echo "################################################################################################"
-echo "---------------Installing the pod network before the cluster can come up---------------"
-kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
-  echo "################################################################################################"
-echo "------Installing pip packages for AWSCLI-----"
-sudo yum install python3-pip -y
-echo "################################################################################################"
-echo "---------------Install the AWS CLI version 2 on Linux---------"
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
-echo "################################################################################################"
-echo "---------Confirming the AWSCLI installation-----------------------------"
-/usr/local/bin/aws --version
-echo "################################################################################################"
-echo "-------Installing all AWS CLI tools pypy botocore PyYAML s3transfer etc----"
-pip3 install awscli --upgrade --user
-echo "################################################################################################"
-echo "-----------Appending  the FQDN to the /etc/hosts----------------"
-echo "192.168.33.28 capacitybay28.example.com capacity28" >>/etc/hosts
-echo "capacitybay01.example.com" >/etc/hostname
-echo "################################################################################################"
+systemctl restart docker
+# Enable docker service to start on boot, run the following command:
+sudo systemctl enable docker
+
+# (Install containerd)
+## Set up the repository
+### Install required packages
+yum install -y yum-utils device-mapper-persistent-data lvm2
+## Add docker repository
+yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+## Install containerd
+yum update -y && yum install -y containerd.io
+## Configure containerd
+mkdir -p /etc/containerd
+containerd config default > /etc/containerd/config.toml
+# Restart containerd
+systemctl restart containerd
 echo "--------------------Rebooting The Server-------------------------"
 init 6
